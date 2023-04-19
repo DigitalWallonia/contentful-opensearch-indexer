@@ -1,0 +1,37 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "_source":{
+                "includes":["sys.id","sys.contentType.sys.id","fields.title","fields.type","fields.slug","fields.status","fields.shortDescription","fields.endDate","fields.startDate","fields.referencePost","fields.referenceEvent", "fields.profiles.fr"],
+                "excludes":["*.version3Identifier","*.clientSites","*.version2Identifier","*.nl","*.de","*.Ref"]
+            },
+            "query":{
+                "bool":{
+                    "must":[
+                        {"match":{"sys.contentType.sys.id":"actionPlan"}},
+                        {"exists":{"field":"fields.title.{{language}}"}},
+                        {"exists":{"field":"fields.slug.{{language}}"}},
+                        {"match": {"fields.slug.fr": "{{actionPlanSlug}}"}},
+                        {
+                            "bool": {
+                                "must": {{#toJson}}clientSites{{/toJson}}
+                            }
+                        }
+                    ]
+                }
+            }
+        }|,
+        "params": {
+            "clientSites": [
+                {
+                    "term": {
+                            "fields.clientSites.fr.name.{{language}}": "Digital Wallonia"
+                        }
+                }
+            ],
+            "language": "fr",
+            "actionPlanSlug": "actionPlanSlugExample"
+        }
+    }
+}

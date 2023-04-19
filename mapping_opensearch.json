@@ -1,0 +1,563 @@
+{
+  "dynamic": false,
+  "properties": {
+    "sys": {
+      "properties": {
+        "updatedAt": {
+          "type": "date"
+        },
+        "publishedAt": {
+          "type": "date"
+        },
+        "id": {
+          "type": "keyword"
+        },
+        "contentType": {
+          "properties": {
+            "sys": {
+              "properties": {
+                "id": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "linked_entries": {
+      "type": "keyword"
+    },
+    "fields": {
+      "properties": {
+        "internalName": {
+          "properties": {
+            "fr": {
+              "type": "keyword",
+              "fields" : {
+                "raw": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "type": {
+          "properties": {
+            "fr": {
+              "type": "keyword"
+            }
+          }
+        },
+        "title": {
+          "localization": "text_multi"
+        },
+        "startDate": {
+          "properties": {
+            "fr": {
+              "type": "date"
+
+            }
+          }
+        },
+        "endDate": {
+          "properties": {
+            "fr": {
+              "type": "date"
+
+            }
+          }
+        },
+        "shortDescription": {
+          "localization": "text"
+        },
+        "additionalDescription": {
+          "localization": "text"
+        },
+        "slug": {
+          "localization": "keyword"
+        },
+        "endPublicationDate": {
+          "properties": {
+            "fr": {
+              "type": "date"
+            }
+          }
+        },
+        "authors": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "internalName": {
+                   "properties": {
+                      "fr": {
+                        "type": "text",
+                        "fields": {
+                          "raw": {
+                            "type": "keyword"
+                          }
+                        }
+                      }
+                   }
+                }
+              }
+            }
+          }
+        },
+        "categories": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                },
+                "slug": {
+                  "localization": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "children": {
+          "properties": {
+            "fr": {
+              "type": "object"
+            }
+          }
+        },
+        "ambitions": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                },
+                "slug": {
+                  "localization": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "organizers": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                },
+                "slug": {
+                  "localization": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "contactPersons": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "internalName": {
+                  "properties": {
+                    "fr": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "projectHolders": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "internalName": {
+                  "properties": {
+                    "fr": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "participants": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "internalName": {
+                  "properties": {
+                    "fr": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "speakers": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "internalName": {
+                  "properties": {
+                    "fr": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "hosts": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                },
+                "slug": {
+                  "localization": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "partners": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                },
+                "slug": {
+                  "localization": "keyword"
+                }
+
+              }
+            }
+          }
+        },
+        "source": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "slug": {
+                  "localization": "keyword"
+                },
+                "title": {
+                  "localization": "text"
+                }
+              }
+            }
+          }
+        },
+        "responsiblePersons": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "slug": {
+                  "localization": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "featuredEmails": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "EmailAddress": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "programs": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                },
+                "slug": {
+                  "localization": "keyword"
+                }
+              }
+            },
+            "fields" : {
+                "type": "nested"
+            }
+          }
+        },
+        "contentSummary": {
+          "localization": "text"
+        },
+        "contentTitle": {
+          "localization": "text"
+        },
+        "publishedDate": {
+          "properties": {
+            "fr": {
+              "type": "date"
+            }
+          }
+        },
+        "quotedPersons": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "internalName": {
+                  "properties": {
+                    "fr": {
+                      "type": "text",
+                      "fields" : {
+                        "keyword": {
+                          "type": "keyword"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "quotedProfiles": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                },
+                "slug": {
+                  "localization": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "journalists": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "internalName": {
+                  "properties": {
+                    "fr": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "shortTitle": {
+          "localization": "text"
+        },
+        "addresses": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "Geometry": {
+                  "properties": {
+                    "type": {
+                      "type": "keyword"
+                      },
+                    "coordinates": {
+                      "type": "geo_point"
+                    }
+                  }
+                },
+                "Vicinity": {
+                  "type": "text"
+                },
+                "Metadata": {
+                  "properties": {
+                    "AddressType": {
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "location": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "toggleSelected": {
+                  "type": "keyword"
+                },
+                "Geometry": {
+                  "properties": {
+                    "location": {
+                      "type": "geo_point"
+                    },
+                    "coordinates": {
+                      "type": "geo_point"
+                    },
+                    "type": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "Vicinity": {
+                  "type": "text"
+                }
+              }
+            }
+          }
+        },
+        "status": {
+          "properties": {
+            "fr": {
+              "type": "keyword"
+            }
+          }
+        },
+        "belgianEnterprises": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "Name": {
+                  "type": "text"
+                },
+                "Number": {
+                  "type": "long"
+                }
+              }
+            }
+          }
+        },
+        "featuredPersons": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "internalName": {
+                  "properties": {
+                    "fr": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "founders": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                }
+              }
+            }
+          }
+        },
+        "incubators": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                }
+              }
+            }
+          }
+        },
+        "introduction": {
+          "localization": "text"
+        },
+        "content": {
+          "localization": "text"
+        },
+        "relatedEvents": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                }
+              }
+            }
+          }
+        },
+        "relatedPosts": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                }
+              }
+            }
+          }
+        },
+        "relatedProfiles": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "title": {
+                  "localization": "text"
+                }
+              }
+            }
+          }
+        },
+        "relatedPersons": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "InternalName": {
+                  "properties": {
+                    "fr": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "profiles": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "role": {
+                  "properties": {
+                    "fr": {
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "clientSites": {
+          "properties": {
+            "fr": {
+              "properties": {
+                "name": {
+                  "properties": {
+                    "fr": {
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

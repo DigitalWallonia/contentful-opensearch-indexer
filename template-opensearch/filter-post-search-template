@@ -1,0 +1,76 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "_source":{
+                "includes":["fields.*","sys.id","sys.contentType.sys.id","sys.updatedAt"],
+                "excludes":["*.version3Identifier","*.clientSites","*.version2Identifier","*.nl","*.de","*.Ref","fields.additionalDescription","fields.authors","fields.content","fields.bannerAssetImage","fields.thumbnailAssetImage","fields.dynamicLists","fields.relatedPosts","fields.relatedProfiles","fields.relatedPersons","fields.relatedFiles","fields.relatedEvents","fields.postInPDF","fields.categories","fields.ambitions","fields.programs"]
+            },
+            "query":{
+                "bool":{
+                    "must":[
+                        {"match":{"sys.contentType.sys.id":"post"}},
+                        {"exists":{"field":"fields.title.{{language}}"}},
+                        {"exists":{"field":"fields.slug.{{language}}"}},
+                        {"exists":{"field":"fields.introduction.{{language}}"}},
+                        {"exists":{"field":"fields.content.{{language}}"}},
+                        {"exists":{"field":"fields.publishedDate.fr"}},
+                        {"bool":{"must":{{#toJson}}categoriesSlugList{{/toJson}}}},
+                        {"bool":{"must":{{#toJson}}programsSlugList{{/toJson}}}},
+                        {"bool":{"should":{{#toJson}}postTypeList{{/toJson}}}},
+                         {
+                            "bool": {
+                                "must": {{#toJson}}clientSites{{/toJson}}
+                            }
+                        }
+                    ]
+                }
+            },"from":{{from}},
+            "size":{{size}},
+            "sort":[{"fields.publishedDate.fr":{"order":"desc"}}]
+            }|,
+        "params": {
+            "size": 12,
+            "from": 0,
+            "categoriesSlugList": [
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "language": "en",
+            "clientSites": [
+                {
+                    "term": {
+                            "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                        }
+                }
+            ],
+            "programsSlugList": [
+                {
+                    "term": {
+                        "fields.programs.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.programs.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "postTypeList": [
+                {
+                    "term": {
+                        "fields.type.fr": "Feature article"
+                    }
+                }
+            ]
+        }
+    }
+}

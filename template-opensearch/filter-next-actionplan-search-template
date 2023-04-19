@@ -1,0 +1,143 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "_source":{
+                "includes":["fields.*","sys.id","sys.contentType.sys.id"],
+                "excludes":["*.version3Identifier","*.clientSites","*.version2Identifier","*.nl","*.de","*.Ref","fields.additionalDescription","fields.content","fields.bannerAssetImage","fields.thumbnailAssetImage","fields.belgianEnterprises","fields.featuredPersons","fields.nonFeaturedPersons","fields.categories","fields.ambitions","fields.programs","fields.urlsWebSite","fields.email","fields.phoneLandline","fields.phoneMobile","fields.price","fields.targetAudience","fields.scheduleAdditionalInformation","fields.scheduleNotSpecified","fields.url","fields.partners","fields.contactPersons","fields.organizers","fields.hosts"]
+            },
+            "query":{
+                "bool":{
+                    "must":[
+                        {"match":{"sys.contentType.sys.id":"event"}},
+                        {"exists":{"field":"fields.title.{{language}}"}},
+                        {"exists":{"field":"fields.slug.{{language}}"}},
+                        {"range":{"fields.endDate.fr":{"gte":"now"}}},
+                        {"range":{"fields.endPublicationDate.fr":{"gte":"now"}}},
+                        {"bool":{"must":{{#toJson}}categoriesSlugList{{/toJson}}}},
+                        {"bool":{"must":{{#toJson}}programsSlugList{{/toJson}}}},
+                        {"bool":{"should":{{#toJson}}eventTypeList{{/toJson}}}},
+                        {
+                            "bool": {
+                                "must": {{#toJson}}clientSites{{/toJson}}
+                            }
+                        }
+                    ],
+                    "filter":[
+                        {"bool":{"should":{{#toJson}}regionsList{{/toJson}}}}
+                    ]
+                }
+            },
+            "from":{{from}},
+            "size":{{size}},
+            "sort":[
+                {"fields.startDate.fr":{"order":"asc"}}
+            ]
+        }|,
+        "params": {
+            "size": 12,
+            "from": 0,
+            "categoriesSlugList": [
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "programsSlugList": [
+                {
+                    "term": {
+                        "fields.programs.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.programs.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "eventTypeList": [
+                {
+                    "term": {
+                        "fields.type.fr": "International mission"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.type.fr": "Expo & program"
+                    }
+                }
+            ],
+             "clientSites": [
+                {
+                    "term": {
+                            "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                        }
+                }
+            ],
+            "language": "fr",
+            "regionsList": [
+                {
+                    "geo_shape": {
+                        "fields.location.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "brabantWallon",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.location.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "liege",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.location.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "namur",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.location.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "luxembourg",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.location.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "hainaut",
+                                "path": "location"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

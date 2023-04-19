@@ -1,0 +1,74 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "_source":{
+                "includes":["sys.id","sys.contentType.sys.id","fields.title","fields.type","fields.slug","fields.status","fields.shortDescription","fields.endDate","fields.startDate","fields.referencePost","fields.referenceEvent"],
+                "excludes":["*.version3Identifier","*.clientSites","*.version2Identifier","*.nl","*.de","*.Ref"]
+            },
+            "query":{
+                "bool":{
+                    "must":[
+                        {"match":{"sys.contentType.sys.id":"actionPlan"}},
+                        {"exists":{"field":"fields.title.{{language}}"}},
+                        {"exists":{"field":"fields.slug.{{language}}"}},
+                        {"bool":{"must":{{#toJson}}programsSlugList{{/toJson}}}},
+                        {"bool":{"should":{{#toJson}}typeList{{/toJson}}}},
+                        {"bool":{"should":{{#toJson}}statusList{{/toJson}}}},
+                        {
+                            "bool": {
+                                "must": {{#toJson}}clientSites{{/toJson}}
+                            }
+                        }
+                    ]
+                }
+            },
+            "sort":{{#sort}}{{#toJson}}sort{{/toJson}}{{/sort}}{{^sort}}{"fields.startDate.fr":{"order":"asc"}}{{/sort}},
+            "from":{{from}},
+            "size":{{size}}
+        }|,
+        "params": {
+            "programsSlugList": [
+                {
+                    "term": {
+                        "fields.programs.fr.slug.{{language}}": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.programs.fr.slug.{{language}}": "slug"
+                    }
+                }
+            ],
+            "typeList": [
+                {
+                    "term": {
+                        "fields.type.fr": "Call for projects"
+                    }
+                }
+            ],
+            "statusList": [
+                {
+                    "match": {
+                        "fields.status.fr": "Finished"
+                    }
+                }
+            ],
+            "sort": {
+                "fields.endDate.fr": {
+                    "order": "asc"
+                }
+            },
+            "clientSites": [
+                {
+                    "term": {
+                            "fields.clientSites.fr.name.{{language}}": "Digital Wallonia"
+                        }
+                }
+            ],
+            "language": "fr",
+            "size": 12,
+            "from": 0
+        }
+    }
+}

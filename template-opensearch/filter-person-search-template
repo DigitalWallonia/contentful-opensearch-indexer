@@ -1,0 +1,133 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "_source":{
+                "includes":["fields.*","sys.id","sys.contentType.sys.id","sys.updatedAt"],
+                "excludes":["*.version3Identifier","*.clientSites","*.version2Identifier","*.nl","*.de","*.Ref","fields.additionalDescription","fields.content","fields.bannerAssetImage","fields.thumbnailAssetImage","fields.belgianEnterprises","fields.featuredPersons","fields.nonFeaturedPersons","fields.ambitions","fields.programs","fields.email","fields.phoneLandline","fields.phoneMobile","fields.price","fields.targetAudience","fields.scheduleAdditionalInformation","fields.scheduleNotSpecified","fields.partners","fields.contactPersons"]
+            },
+            "query":{
+                "bool":{
+                    "must":[
+                        {"match":{"sys.contentType.sys.id":"person"}},
+                        {"exists":{"field":"fields.internalName.fr"}},
+                        {"exists":{"field":"fields.slug.{{language}}"}},
+                        {"bool":{"must":{{#toJson}}categoriesSlugList{{/toJson}}}},
+                        {"bool":{"must":{{#toJson}}programsSlugList{{/toJson}}}},
+                        {
+                            "bool": {
+                                "must": {{#toJson}}clientSites{{/toJson}}
+                            }
+                        }
+                    ],
+                    "filter":[
+                        {"bool":{"should":{{#toJson}}regionsList{{/toJson}}}}
+                    ]
+                }
+            },
+            "sort":{{#sort}}{{#toJson}}sort{{/toJson}}{{/sort}}{{^sort}}[{"sys.updatedAt":{"order":"asc"}}]{{/sort}},
+            "from":{{from}},
+            "size":{{size}}
+        }|,
+        "params": {
+            "language": "en",
+            "size": 12,
+            "from": 0,
+            "clientSites": [
+                {
+                    "term": {
+                            "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                        }
+                }
+            ],
+            "categoriesSlugList": [
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "programsSlugList": [
+                {
+                    "term": {
+                        "fields.programs.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.programs.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "regionsList": [
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "brabantWallon",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "liege",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "namur",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "luxembourg",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "hainaut",
+                                "path": "location"
+                            }
+                        }
+                    }
+                }
+            ],
+            "sort": [
+                {
+                    "sys.updatedAt": {
+                        "order": "asc"
+                    }
+                }
+            ]
+        }
+    }
+}

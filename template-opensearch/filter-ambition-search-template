@@ -1,0 +1,48 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "_source":{
+                "includes":["sys.id","sys.contentType.sys.id","fields.title","fields.slug","fields.shortDescription","fields.contactPersons"],
+                "excludes":["*.version3Identifier","*.clientSites","*.version2Identifier","*.nl","*.de","*.en","*.Ref"]
+            },
+            "query":{
+                "bool":{
+                    "must":[
+                        {"match":{"sys.contentType.sys.id":"ambition"}},
+                        {"exists":{"field":"fields.title.{{language}}"}},
+                        {"exists":{"field":"fields.slug.{{language}}"}},
+                        {"bool":{"must":{{#toJson}}slugList{{/toJson}}}},
+                        {
+                            "bool": {
+                                "must": {{#toJson}}clientSites{{/toJson}}
+                            }
+                        }
+                    ]
+                }
+            },
+            "sort":{{#sort}}{{#toJson}}sort{{/toJson}}{{/sort}}{{^sort}}{"fields.title.{{language}}.raw":{"order":"asc"}}{{/sort}},
+            "from":{{from}},
+            "size":{{size}}
+        }|,
+        "params": {
+            "slugList": [
+                {
+                    "term": {
+                        "fields.slug.{{language}}": "slug"
+                    }
+                }
+            ]
+        },
+        "language": "fr",
+         "clientSites": [
+              {
+                  "term": {
+                      "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                  }
+              }
+         ],
+         "size": 12,
+         "from": 0
+    }
+}

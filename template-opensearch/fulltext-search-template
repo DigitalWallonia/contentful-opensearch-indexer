@@ -1,0 +1,237 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "query": {
+                "function_score": {
+                    "query": {
+                        "bool": {
+                            "must": [
+                                {
+                                    "query_string": {
+                                        "query": "{{query_string}}"
+                                    }
+                                },
+                                {
+                                    "bool": {
+                                        "should":
+                                            {{#toJson}}contentType{{/toJson}}
+                                    }
+                                },
+                                {
+                                    "bool": {
+                                        "must":
+                                            {{#toJson}}clientSites{{/toJson}}
+                                    }
+                                },
+                                {
+                                    "bool": {
+                                        "should": [
+                                            {
+                                                "exists": {
+                                                    "field": "fields.title.{{language}}"
+                                                }
+                                            },
+                                            {
+                                                "exists": {
+                                                    "field": "fields.slug.{{language}}"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ],
+                            "should": [
+                                {
+                                    "multi_match": {
+                                        "query": "{{query_string}}",
+                                        "type": "phrase",
+                                        "fields": [
+                                            "fields.title.{{language}}"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "fields.title.{{language}}": {
+                                            "query": "{{query_string}}",
+                                            "boost": 15
+                                        }
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "fields.shortTitle.{{language}}": {
+                                            "query": "{{query_string}}",
+                                            "boost": 15
+                                        }
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "fields.internalName.fr": {
+                                            "query": "{{query_string}}",
+                                            "boost": 15
+                                        }
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "fields.categories.fr.title.{{language}}": "{{query_string}}"
+                                    }
+                                },
+                                {
+                                    "range": {
+                                        "endDate": {
+                                            "gte": "now"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "boost": 5,
+                    "functions": [
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "person"
+                                }
+                            },
+                            "weight": 50
+                        },
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "program"
+                                }
+                            },
+                            "weight": 45
+                        },
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "post"
+                                }
+                            },
+                            "weight": 35
+                        },
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "event"
+                                }
+                            },
+                            "weight": 15
+                        },
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "profile"
+                                }
+                            },
+                            "weight": 10
+                        },
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "pressReview"
+                                }
+                            },
+                            "weight": 5
+                        },
+                        {
+                            "filter": {
+                                "range": {
+                                    "fields.endDate.fr": {
+                                        "gte": "now"
+                                    }
+                                }
+                            },
+                            "weight": 30
+                        },
+                        {
+                            "filter": {
+                                "range": {
+                                    "fields.endDate.fr": {
+                                        "lte": "now"
+                                    }
+                                }
+                            },
+                            "weight": 1
+                        }
+                    ],
+                    "max_boost": 50,
+                    "score_mode": "max",
+                    "boost_mode": "multiply",
+                    "min_score": 40
+                }
+            },
+            "from": "{{from}}",
+            "size": "{{size}}",
+            "highlight": {
+                "fragment_size": 200,
+                "number_of_fragments": 2,
+                "fields": {
+                    "fields.shortDescription.{{language}}": {},
+                    "fields.introduction.{{language}}": {},
+                    "fields.additionalDescription.{{language}}": {},
+                    "fields.authors.fr.internalName.fr": {},
+                    "fields.content.{{language}}": {},
+                    "fields.contentSummary.{{language}}": {},
+                    "fields.contactPersons.fr.internalName.fr": {},
+                    "fields.featuredPersons.fr.internalName.fr": {},
+                    "fields.partners.fr.title.{{language}}": {},
+                    "fields.founders.fr.title.{{language}}": {},
+                    "fields.categories.fr.title.{{language}}": {},
+                    "fields.programs.fr.title.{{language}}": {}
+                }
+            }
+        }|,
+        "params": {
+            "size": 12,
+            "from": 0,
+            "query_string": "My query string",
+            "clientSites": [
+                {
+                    "term": {
+                            "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                        }
+                }
+            ],
+            "language": "fr",
+            "contentType": [
+                {
+                    "term": {
+                            "sys.contentType.sys.id": "profile"
+                        }
+                },
+                {
+                    "term": {
+                            "sys.contentType.sys.id": "post"
+                    }
+                },
+                {
+                    "term": {
+                            "sys.contentType.sys.id": "pressReview"
+                    }
+                },
+                {
+                    "term": {
+                            "sys.contentType.sys.id": "person"
+                    }
+                },
+                {
+                    "term": {
+                            "sys.contentType.sys.id": "event"
+                    }
+                },
+                {
+                    "term": {
+                            "sys.contentType.sys.id": "program"
+                    }
+                }
+            ]
+        }
+    }
+}

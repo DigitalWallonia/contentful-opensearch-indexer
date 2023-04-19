@@ -1,0 +1,111 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "_source":{
+                "includes":[
+                    "fields.*",
+                    "sys.id",
+                    "sys.contentType.sys.id",
+                    "sys.updatedAt",
+                    "fields.journalists",
+                    "fields.quotedPersons",
+                    "fields.quotedProfiles"
+                ],
+                "excludes":[
+                    "*.version3Identifier",
+                    "*.clientSites",
+                    "*.version2Identifier",
+                    "*.nl",
+                    "*.de",
+                    "*.Ref",
+                    "fields.additionalDescription",
+                    "fields.language",
+                    "fields.categories",
+                    "fields.ambitions",
+                    "fields.programs"
+                ]
+            },
+            "query":{
+                "bool":{
+                    "must":[
+                        {"match":{"sys.contentType.sys.id":"pressReview"}},
+                        {"exists":{"field":"fields.title.{{language}}"}},
+                        {"exists":{"field":"fields.shortDescription.{{language}}"}},
+                        {"exists":{"field":"fields.source.fr"}},
+                        {"exists":{"field":"fields.publishedDate.fr"}},
+                        {"bool":{
+                            "must":{{#toJson}}categoriesSlugList{{/toJson}}}},
+                        {"bool":{"must":{{#toJson}}quotedProfilesSlugList{{/toJson}}}},
+                        {"bool":{"should":{{#toJson}}quotedPersonsInternalNameList{{/toJson}}}},
+                        {"bool":{"should":{{#toJson}}programsSlugList{{/toJson}}}},
+                        {
+                            "bool": {
+                                "must": {{#toJson}}clientSites{{/toJson}}
+                            }
+                        }
+                    ]
+                }
+            },
+            "from":{{from}},
+            "size":{{size}},
+            "sort":[
+                {
+                    "fields.publishedDate.fr":{
+                        "order":"desc"
+                    }
+                }
+            ]
+        }|,
+        "params": {
+            "language": "en",
+            "size": 12,
+            "from": 0,
+            "clientSites": [
+                {
+                    "term": {
+                            "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                        }
+                }
+            ],
+            "categoriesSlugList": [
+                {
+                    "term": {
+                        "fields.categories.fr.slug.fr": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.categories.fr.slug.fr": "slug"
+                    }
+                }
+            ],
+            "programsSlugList": [
+                {
+                    "term": {
+                        "fields.programs.fr.slug.fr": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.programs.fr.slug.fr": "slug"
+                    }
+                }
+            ],
+            "quotedProfilesSlugList": [
+                {
+                    "term": {
+                        "fields.quotedProfiles.fr.slug.fr": "lasea"
+                    }
+                }
+            ],
+            "quotedPersonsInternalNameList": [
+                {
+                    "term": {
+                        "fields.quotedPersons.fr.internalName.fr.keyword": "Axel Kupisiewicz - Lasea"
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,306 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "_source":{
+                "includes":["fields.*","sys.id","sys.contentType.sys.id","sys.updatedAt"],
+                "excludes":["*.version3Identifier","*.clientSites","*.version2Identifier","*.nl","*.de","*.Ref","fields.additionalDescription","fields.belgianEnterprisesNumbers","fields.content","fields.bannerAssetImage","fields.thumbnailAssetImage","fields.belgianEnterprises","fields.featuredPersons","fields.nonFeaturedPersons","fields.categories","fields.ambitions","fields.programs","fields.email","fields.phoneLandline","fields.phoneMobile","fields.price","fields.targetAudience","fields.scheduleAdditionalInformation","fields.scheduleNotSpecified","fields.partners","fields.contactPersons", "fields.plateformContactPerson.*", "fields.urlsSocialNetwork.*", "fields.urlsWebSite.*", "fields.shortDescription.*"]
+            },
+            "query": {
+                "bool":{
+                    "must":[
+                        {
+                            "match":{
+                                "sys.contentType.sys.id":"profile"
+                            }
+                        },
+                        {
+                            "exists":{
+                                "field":"fields.title.{{language}}"
+                            }
+                        },
+                        {
+                            "exists":{
+                                "field":"fields.slug.{{language}}"
+                            }
+                        },
+                        {
+                            "bool":{
+                                "should":{{#toJson}}categoriesSlugList0{{/toJson}}
+                            }
+                        },
+                        {
+                            "bool":{
+                                "should":{{#toJson}}categoriesSlugList1{{/toJson}}
+                            }
+                        },
+                        {
+                            "bool":{
+                                "should":{{#toJson}}categoriesSlugList2{{/toJson}}
+                            }
+                        },
+                        {
+                            "bool":{
+                                "should":{{#toJson}}categoriesSlugList3{{/toJson}}
+                            }
+                        },
+                        {
+                            "bool":{
+                                "should":{{#toJson}}categoriesSlugList4{{/toJson}}
+                            }
+                        },
+                        {
+                            "bool":{
+                                "should":{{#toJson}}programsSlugList{{/toJson}}
+                            }
+                        },
+                        {
+                            "bool": {
+                                "must":
+                                    {{#toJson}}clientSites{{/toJson}}
+                            }
+                        }
+                    ],
+                    "filter":[
+                        {{#notInRegionList}}
+                        {
+                            "bool": {
+                                "must_not": {{#toJson}}notInRegionList{{/toJson}}
+                            }
+                         },
+                        {{/notInRegionList}}
+                        {
+                            "bool":{
+                                "should":{{#toJson}}regionsList{{/toJson}}
+                            }
+                        },
+                        {
+                            "geo_bounding_box": {
+                                 "fields.addresses.fr.Geometry.coordinates": {
+                                    "top_right": {{#toJson}}top_right{{/toJson}},
+                                    "bottom_left": {{#toJson}}bottom_left{{/toJson}}
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "sort":{{#sort}}{{#toJson}}sort{{/toJson}}{{/sort}}{{^sort}}[{"fields.title.en.raw":{"order":"asc"}}]{{/sort}},
+            "from":{{from}},
+            "size":{{size}}
+        }|,
+        "params": {
+            "language": "en",
+            "size": 12,
+            "from": 0,
+            "bottom_left": [
+                3.2302446062151406,
+                48.632898441446876
+            ],
+            "top_right": [
+                7.668721168715142,
+                51.45057419097133
+            ],
+            "categoriesSlugList0": [
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "categoriesSlugList1": [
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "categoriesSlugList2": [
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                }
+            ],
+             "categoriesSlugList3": [
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "categoriesSlugList4": [
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.categories.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "programsSlugList": [
+                {
+                    "term": {
+                        "fields.programs.fr.slug.en": "slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.programs.fr.slug.en": "slug"
+                    }
+                }
+            ],
+            "clientSites": [
+                {
+                    "term": {
+                            "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                        }
+                }
+            ],
+            "regionsList": [
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "brabantWallon",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "liege",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "namur",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "luxembourg",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "hainaut",
+                                "path": "location"
+                            }
+                        }
+                    }
+                }
+            ],
+            "notInRegionList": [
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "brabantWallon",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "liege",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "namur",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "luxembourg",
+                                "path": "location"
+                            }
+                        }
+                    }
+                },
+                {
+                    "geo_shape": {
+                        "fields.addresses.fr.Geometry.coordinates": {
+                            "indexed_shape": {
+                                "index": "shapes",
+                                "id": "hainaut",
+                                "path": "location"
+                            }
+                        }
+                    }
+                }
+            ],
+            "sort": [
+                {
+                    "sys.updatedAt": {
+                        "order": "asc"
+                    }
+                }
+            ]
+        }
+    }
+}

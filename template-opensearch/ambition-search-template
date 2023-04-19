@@ -1,0 +1,153 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "_source": {
+                "includes": [
+                    "fields.*",
+                    "sys.id",
+                    "sys.contentType.sys.id",
+                    "sys.updatedAt"
+                ],
+                "excludes": [
+                    "*.version3Identifier",
+                    "*.clientSites",
+                    "*.version2Identifier",
+                    "*.nl",
+                    "*.de",
+                    "*.Ref",
+                    "fields.additionalDescription",
+                    "fields.content",
+                    "fields.bannerAssetImage",
+                    "fields.thumbnailAssetImage",
+                    "fields.belgianEnterprises",
+                    "fields.featuredPersons",
+                    "fields.nonFeaturedPersons",
+                    "fields.categories",
+                    "fields.ambitions",
+                    "fields.programs",
+                    "fields.email",
+                    "fields.phoneLandline",
+                    "fields.phoneMobile",
+                    "fields.price",
+                    "fields.targetAudience",
+                    "fields.scheduleAdditionalInformation",
+                    "fields.scheduleNotSpecified",
+                    "fields.partners",
+                    "fields.contactPersons"
+                ]
+            },
+            "query": {
+                "function_score": {
+                    "query": {
+                        "bool": {
+                            "must": [
+                                {
+                                    "match": {
+                                        "fields.ambitions.fr.slug.{{language}}": "{{query_string}}"
+                                    }
+                                },
+                                {
+                                    "bool": {
+                                        "must":
+                                            {{#toJson}}clientSites{{/toJson}}
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "boost": 5,
+                    "functions": [
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "person"
+                                }
+                            },
+                            "weight": 50
+                        },
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "program"
+                                }
+                            },
+                            "weight": 45
+                        },
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "post"
+                                }
+                            },
+                            "weight": 35
+                        },
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "event"
+                                }
+                            },
+                            "weight": 15
+                        },
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "profile"
+                                }
+                            },
+                            "weight": 10
+                        },
+                        {
+                            "filter": {
+                                "match": {
+                                    "sys.contentType.sys.id": "pressReview"
+                                }
+                            },
+                            "weight": 5
+                        },
+                        {
+                            "filter": {
+                                "range": {
+                                    "endDate": {
+                                        "gte": "now"
+                                    }
+                                }
+                            },
+                            "weight": 30
+                        },
+                        {
+                            "filter": {
+                                "range": {
+                                    "endDate": {
+                                        "lte": "now"
+                                    }
+                                }
+                            },
+                            "weight": 1
+                        }
+                    ],
+                    "max_boost": 50,
+                    "score_mode": "max",
+                    "boost_mode": "multiply",
+                    "min_score": 40
+                }
+            },
+            "from": "{{from}}",
+            "size": "{{size}}"
+        }|,
+        "params": {
+            "query_string": "My query string"
+        },
+        "clientSites": [
+            {
+                "term": {
+                        "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                    }
+            }
+        ],
+        "language": "fr",
+        "size": 12,
+        "from": 0
+    }
+}

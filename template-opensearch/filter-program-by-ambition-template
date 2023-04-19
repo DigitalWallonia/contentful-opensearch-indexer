@@ -1,0 +1,53 @@
+{
+    "script": {
+        "lang": "mustache",
+        "source": |{
+            "_source":{
+                "includes":["fields.*","sys.id","sys.contentType.sys.id","sys.updatedAt"],
+                "excludes":["*.version3Identifier","*.clientSites","*.version2Identifier","*.nl","*.de","*.Ref","fields.additionalDescription","fields.content","fields.bannerAssetImage","fields.thumbnailAssetImage","fields.belgianEnterprises","fields.featuredPersons","fields.nonFeaturedPersons","fields.categories","fields.programs","fields.email","fields.phoneLandline","fields.phoneMobile","fields.price","fields.targetAudience","fields.scheduleAdditionalInformation","fields.scheduleNotSpecified","fields.partners","fields.contactPersons"]
+            },"
+            query":{
+                "bool":{
+                    "must":[
+                        {"match":{"sys.contentType.sys.id":"program"}},
+                        {"bool":{"should":{{#toJson}}ambitionsSlugList{{/toJson}}}},
+                         {
+                            "bool": {
+                                "must": {{#toJson}}clientSites{{/toJson}}
+                            }
+                        }
+                    ]
+                }
+            },
+            "sort":[{"sys.updatedAt":{"order":"desc"}}],
+            "from":"{{from}}",
+            "size":"{{size}}"
+        }|,
+        "params": {
+            "language": "en",
+            "size": 12,
+            "from": 0,
+            "clientSites": [
+                {
+                    "term": {
+                            "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                        }
+                }
+            ],
+            "ambitionsSlugList": [
+                {
+                    "term": {
+                        "fields.ambitions.fr.slug.en": "ambition-slug"
+                    }
+                },
+                {
+                    "term": {
+                        "fields.ambitions.fr.slug.en": "ambition-slug"
+                    }
+                }
+            ],
+            "from": 0,
+            "size": 9
+        }
+    }
+}
