@@ -29,9 +29,12 @@ async def opn_update_entry(messages):
     :return:
     """
     cf_client = await load_classes()
-    h.opn_build_categories(cf_client)
+    await h.opn_build_categories(cf_client)
     for message in messages:
         message_json = json.loads(message['body'])
+        # Load message if it is a redrive
+        if 'Message' in message_json:
+            message_json = json.loads(message_json['Message'])
         print(f"processing entry {message_json['sys']['id']}")
         cf_doc = await h.get_contentful_asset_entry_curl(cf_client, message_json['sys']['id'])
         opn_doc = h.opn_search_by_cf_id(cf_client, message_json['sys']['id'])
@@ -40,7 +43,7 @@ async def opn_update_entry(messages):
             # Check if `contentType` exists since assets do not have it for example
             if 'contentType' in cf_doc['sys'] and cf_doc['sys']['contentType']['sys']['id'] == 'category':
                 # Rebuilding categorytree as a category changed
-                h.opn_build_categories(cf_client)
+                await h.opn_build_categories(cf_client)
             if opn_doc is not None and h.compare_opn_contentful_document(cf_doc, opn_doc['_source']):
                 # Sends the document to SNS for updating
                 h.send_to_sns_topic(json.dumps(cf_doc))
