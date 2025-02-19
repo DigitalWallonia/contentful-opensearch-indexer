@@ -81,6 +81,11 @@
                                     }
                                 },
                                 {
+                                    "match": {
+                                        "fields.categories.fr.slug.{{language}}": "{{query_string}}"
+                                    }
+                                },
+                                {
                                     "range": {
                                         "endDate": {
                                             "gte": "now"
@@ -195,7 +200,7 @@
             "clientSites": [
                 {
                     "term": {
-                            "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                            "fields.clientSitesList.fr": "Digital-Wallonia"
                         }
                 }
             ],

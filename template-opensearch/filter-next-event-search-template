@@ -53,7 +53,7 @@
             "clientSites": [
                 {
                     "term": {
-                            "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                            "fields.clientSitesList.fr": "Digital-Wallonia"
                         }
                 }
             ],

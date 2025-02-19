@@ -4,7 +4,7 @@
         "source": |{
             "_source":{
                 "includes":["fields.*","sys.id","sys.contentType.sys.id","sys.updatedAt"],
-                "excludes":["*.version3Identifier","*.clientSites","*.version2Identifier","*.nl","*.de","*.Ref","fields.additionalDescription","fields.authors","fields.content","fields.bannerAssetImage","fields.thumbnailAssetImage","fields.dynamicLists","fields.relatedPosts","fields.relatedProfiles","fields.relatedPersons","fields.relatedFiles","fields.relatedEvents","fields.postInPDF","fields.categories","fields.ambitions","fields.programs"]
+                "excludes":["*.version3Identifier","*.clientSites","*.version2Identifier","*.nl","*.de","*.Ref","fields.additionalDescription","fields.content","fields.thumbnailAssetImage","fields.dynamicLists","fields.relatedPosts","fields.relatedProfiles","fields.relatedPersons","fields.relatedFiles","fields.relatedEvents","fields.postInPDF","fields.categories","fields.programs"]
             },
             "query":{
                 "bool":{
@@ -48,7 +48,7 @@
             "clientSites": [
                 {
                     "term": {
-                            "fields.clientSites.fr.name.fr": "Digital Wallonia"
+                            "fields.clientSitesList.fr": "Digital-Wallonia"
                         }
                 }
             ],
