@@ -1,11 +1,15 @@
 cf_param = {
+    'clientSite': {
+    },
+    'category': {
+    },
+    'post': {
+    },
     'program': {
     },
     'qualifiedPerson': {
     },
     'callToAction': {
-    },
-    'clientSite': {
     },
     'contentBloc': {
     },
@@ -24,8 +28,6 @@ cf_param = {
     'event': {
     },
     'profile': {
-    },
-    'post': {
     },
     'pressReview': {
     #'fields.source[exists]': 'true',
@@ -48,6 +50,6 @@ cf_param = {
     },
     'foreignEnterprise': {
     },
-    'category': {
+    'servicesPlace': {
     }
 }
