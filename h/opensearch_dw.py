@@ -5,6 +5,8 @@ import re
 import sys
 from opensearchpy import OpenSearch
 import traceback
+
+import h
 from . import colours
 from . import contentful_dw
 
@@ -254,6 +256,25 @@ def opn_delete_document(self, document_id, index=''):
     return response
 
 
+def opn_delete_documents_by_contenttype(self, contenttype_id, index=''):
+    """
+    Delete all documents in OpenSearch matching the contentType ID
+
+    :param self:
+    :param contenttype_id: the contentType we want to delete in OpenSearch
+    :param index: the index that should be used, default to self.opn_cf_index if not specified
+    :return:
+    """
+    if index == '':
+        index = self.opn_cf_index
+    response = self.opn_client.delete_by_query(
+        index=index,
+        body={"query": {"match":  {"sys.contentType.sys.id": contenttype_id}}},
+        refresh=True
+    )
+    return response
+
+
 def opn_query_search_after_linked_entry(self, document_id, size=1000, search_after=0, index=''):
     """
     Scroll and get all documents with linked entries
@@ -459,7 +480,7 @@ def opn_query_search_after(self, cf_type, size, search_after=0):
     return opn_entries
 
 
-def opn_build_categories(self):
+async def opn_build_categories(self):
     """
     Get all the opensearch categories
 
@@ -473,7 +494,7 @@ def opn_build_categories(self):
     opn_response = self.opn_client.search(
         body=query,
         index=index,
-        size=1000,
+        size=5000,
         expand_wildcards="open"
     )
     if opn_response['hits']['total']['value'] < 1:
@@ -481,8 +502,10 @@ def opn_build_categories(self):
         sys.exit(1)
     # Create en empty dict
     categories_dict = {}
+    # If this variable is set to true it means a new build took place
+    new_category_tree_missing_category = False
     # The fields that we want to keep
-    interesting_fields = ['title', 'slug', 'clientSites', 'children', 'isFeaturedOnProfilesSearchDW', 'id',
+    interesting_fields = ['title', 'slug', 'clientSitesList', 'children', 'isFeaturedOnProfilesSearchDW', 'id',
                           'isProfilesFilterOnProgramDW', 'isFeaturedOnProfileDw']
     # Iterates over all the responses from opensearch and build a dict in format
     # {"id": {<all the keys from `interesting_fields`>}}
@@ -500,13 +523,24 @@ def opn_build_categories(self):
         # Check if the entry is a parent (so has `children`) then add the parent entry `interesting_fields` to the child
         if 'children' in category_fields:
             for category_children in category_fields['children']['fr']:
-                if category_children is not None and category_children['id'] in categories_dict:
+                # If for some reason a link is not resolved, index the entry and set it to category_children
+                # so that the building can continue
+                if category_children is not None and 'id' not in category_children:
+                    print(f"{h.bcolors.WARNING}category hasn't been properly indexed, trying to reindex {category_fields['id']}")
+                    # Reindex the parent entry containing the children
+                    await h.index_cf_entry(self, category_fields['id'])
+                    # Then relaunch a building of the categorytree
+                    new_category_tree_missing_category = await opn_build_categories(self)
+                elif category_children is not None and category_children['id'] in categories_dict:
                     if 'parents' not in categories_dict[category_children['id']]:
                         categories_dict[category_children['id']]['parents'] = []
                     if parent_entry[0] not in categories_dict[category_children['id']]['parents']:
                         categories_dict[category_children['id']]['parents'] += parent_entry
     # Export as a global var in :file `contentful_dw`
-    contentful_dw.categories_dict = categories_dict
+    if new_category_tree_missing_category:
+        contentful_dw.categories_dict = new_category_tree_missing_category
+    else:
+        contentful_dw.categories_dict = categories_dict
     # Post the category tree to opensearch with id `categorytree`
     index = self.opn_cf_index
     response = self.opn_client.index(
