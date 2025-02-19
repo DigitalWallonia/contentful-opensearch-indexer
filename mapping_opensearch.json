@@ -113,6 +113,9 @@
                 },
                 "slug": {
                   "localization": "keyword"
+                },
+                "id": {
+                  "type": "keyword"
                 }
               }
             }
@@ -554,6 +557,13 @@
                   }
                 }
               }
+            }
+          }
+        },
+        "clientSitesList": {
+          "properties": {
+            "fr": {
+             "type": "keyword"
             }
           }
         }
