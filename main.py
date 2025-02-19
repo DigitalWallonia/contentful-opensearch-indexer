@@ -23,7 +23,7 @@ background_tasks = set()
 concurrent_entries = 0
 
 
-async def check_all_cf_entries_by_types(self, cf_type, no_cache=False, create_tasks=False):
+async def check_all_cf_entries_by_types(self, cf_type, no_cache=False):
     """
     Requests all entries for a Contentful type matching a pattern ``cf_type`` in Contentful and Opensearch
     Sends it down to the :func: `check_indexation` function which compares the result and index if needed
@@ -76,29 +76,31 @@ async def check_indexation(self, cf_entries, opn_entries, create_tasks=False):
         ``cf_entries``: The list of contentful entries
         ``opn_entries``: The list of opensearch entries
     """
-    # Iterates over the list of entries and check if it exists in opensearch, if not imports it
-    for cf_entry in cf_entries:
-        # If you want to reimport all entries regardless of it existence in Opensearch
-        # uncomment the following line
-        #opn_entries = []
-        # If the opensearch response is `None` this means the entry doesn't exist in opensearch
-        if cf_entry['sys']['id'] not in opn_entries:
-            print(f"{h.bcolors.OKCYAN}Entry {cf_entry['sys']['id']} not yet indexed, indexing")
-            # Adds the contentful entry ID to prevent recursion in the linked entries resolution
-            global cf_current_id
-            cf_current_id = cf_entry['sys']['id']
-            if create_tasks:
-                await h.index_cf_entry(self, cf_entry['sys']['id'])
-            else:
-                task = asyncio.ensure_future(h.index_cf_entry(self, cf_entry['sys']['id']))
-                # Add task to the set. This creates a strong reference.
-                background_tasks.add(task)
-                # To prevent keeping references to finished tasks forever,
-                # make each task remove its own reference from the set after
-                # completion:
-                task.add_done_callback(background_tasks.discard)
-        else:
-            print(f"{h.bcolors.OKGREEN}Entry {cf_entry['sys']['id']} already indexed")
+    # Create a taskgroup that waits for all tasks to finish
+    async with asyncio.TaskGroup() as tg:
+        # Iterates over the list of entries and check if it exists in opensearch, if not imports it
+        for cf_entry in cf_entries:
+            # If you want to reimport all entries regardless of it existence in Opensearch
+            # uncomment the following line
+            #opn_entries = []
+            # If the opensearch 1response is `None` this means the entry doesn't exist in opensearch
+            if cf_entry['sys']['id'] not in opn_entries:
+                print(f"{h.bcolors.OKCYAN}Entry {cf_entry['sys']['id']} not yet indexed, indexing")
+                # Adds the contentful entry ID to prevent recursion in the linked entries resolution
+                global cf_current_id
+                cf_current_id = cf_entry['sys']['id']
+                if create_tasks:
+                    await h.index_cf_entry(self, cf_entry['sys']['id'])
+                else:
+                    task = tg.create_task(h.index_cf_entry(self, cf_entry['sys']['id']))
+                    # Add task to the set. This creates a strong reference.
+                    background_tasks.add(task)
+                    # To prevent keeping references to finished tasks forever,
+                    # make each task remove its own reference from the set after
+                    # completion:
+                    task.add_done_callback(background_tasks.discard)
+            #else:
+            #    print(f"{h.bcolors.OKGREEN}Entry {cf_entry['sys']['id']} already indexed")
 
 
 async def main():
@@ -106,6 +108,8 @@ async def main():
     opn_client = h.OpnClient(cf_env, opn_host, opn_port, opn_auth)
     cf_client = h.ContentfulClient(cf_client_id, cf_delivery_token, cf_env, opn_client.opn_client)
     full_index = True
+    #await h.opn_build_categories(cf_client)
+    #await h.index_cf_entry(cf_client, '4vlIgRVzUxUrOVPxKgAtxM')
     if full_index is True:
         # Generate a new index with a mmddyyyy format
         opn_client.opn_cf_index = f"d4w-entries_{cf_env}-{datetime.datetime.now().strftime('%m%d%Y')}"
@@ -113,16 +117,26 @@ async def main():
     h.opn_update_mapping(opn_client)
     h.opn_update_search_template(opn_client)
     h.opn_put_shape_template(opn_client)
-    #await h.index_cf_entry(cf_client, '3zpOKXhalGUKaNznOKCTjl')
-    await check_all_cf_entries_by_types(cf_client, 'category', create_tasks=True)
-    # Set back the opensearch cache
+    # As this category is usually not completetely resolved index it once more
+    #await h.index_cf_entry(cf_client, '2EMRFY4WTz2r7ZZVpZeClI')
+    # Enable the opensearch cache
     h.set_no_cache(False)
-    h.opn_build_categories(opn_client)
     for cf_type, v in mapping_dw_es_var.cf_param.items():
+        # As we need cache to resolve clientSites, delete linked entries as the category tree is wrong
+        # Then rebuild the category tree
+        if cf_type not in ['category', 'clientSite']:
+            # Enable the opensearch cache
+#            h.opn_delete_documents_by_contenttype(opn_client, cf_type)
+            # Build the category tree
+            await h.opn_build_categories(cf_client)
         await check_all_cf_entries_by_types(cf_client, cf_type)
+    # Try to reindex documents that couldn't be indexed
+    unavailable_cf_entry = cf_client.unavailable_cf_entry
+    # Reset cf_client.unavailable_cf_entry to keep the unavailable ones
+    cf_client.unavailable_cf_entry = []
+    for document in unavailable_cf_entry:
+        await h.index_cf_entry(cf_client, document)
     print(f'{h.bcolors.FAIL}The following entries could not be indexed {cf_client.unavailable_cf_entry}')
-    # Close the rate limit file opened in the class definition
-    cf_client.rate_limit_file.close()
     # Make the alias point to the newly created index and remove the old one
     aliases = opn_client.opn_client.indices.get_alias(f"d4w-entries_{cf_env}")
     for key, value in aliases.items():
