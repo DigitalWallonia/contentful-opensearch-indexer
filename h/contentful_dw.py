@@ -10,7 +10,7 @@ from . import opensearch_dw
 from . import aws_dw
 
 # --- Contentful settings
-recursive_keys = ['title', 'slug', 'name', 'url', 'file', 'fileName', 'contentType', 'internalName', 'logoAssetImage', 'primaryColor', 'secondaryColor', 'id', 'quotedProfiles', 'role', 'clientSites']
+recursive_keys = ['title', 'slug', 'name', 'url', 'file', 'fileName', 'contentType', 'internalName', 'logoAssetImage', 'primaryColor', 'secondaryColor', 'id', 'quotedProfiles', 'role', 'clientSites', 'clientSitesList', 'secondaryTextColor', 'primaryTextColor']
 cf_current_id = ''
 cf_resolved_id = []
 cf_include = 0
@@ -19,7 +19,7 @@ contentful_space = 'myqv2p4gx62v'
 recurse = 3
 unavailable_cf_entry = []
 currently_processed_entries = 0
-currently_processed_entries_max = 500
+currently_processed_entries_max = 1000
 contenttype_categories = {
     'fr': {
         'person': 'personnes',
@@ -36,6 +36,22 @@ contenttype_categories = {
         'profile': 'cartography',
         'event': 'events',
         'strategy': 'strategy'
+    },
+    'de': {
+        'person': 'Personen',
+        'program': 'Programme',
+        'post': 'Posts',
+        'profile': 'Profile',
+        'event': 'Ereignisse',
+        'strategy': 'Strategie'
+    },
+    'nl': {
+        'person': 'personen',
+        'program': 'programma',
+        'post': 'posten',
+        'profile': 'profielen',
+        'event': 'gebeurtenis',
+        'strategy': 'strategy'
     }
 }
 
@@ -48,7 +64,10 @@ currently_indexed_entry = []
 
 # Do not use caching
 no_cache = True
-request_timeout = 300000
+# aiohttp parameters
+request_timeout = None
+limit_per_host = 50
+limit = 50
 
 
 # https://stackoverflow.com/questions/55704719/python-replace-values-in-nested-dictionary
@@ -121,8 +140,6 @@ async def get_contentful_curl_rate_limit(self, entry_type, request_parameters):
     while request_entry.status == 429:
         # Store the rate limit message with timestamp
         rate_limit_message = f"{datetime.datetime.now().strftime('%m%d%Y%H%M%S%z')}: Received 429, retrying in 0.25s"
-        # Append it to a file
-        self.rate_limit_file.write(f"{rate_limit_message}\n")
         print(f"{colours.bcolors.WARNING}WARNING:{rate_limit_message}")
         await asyncio.sleep(0.25)
         request_entry = await self.request_client.get(
@@ -333,8 +350,14 @@ async def index_cf_entry(self, cf_id, return_document=False):
     linked_entries = []
     # Build the category tree
     if 'categories' in d['fields'] and d['sys']['contentType']['sys']['id'] != 'category':
+        category_bef = d['fields']['categories']['fr']
         d['fields']['categories']['fr'], linked_entries_temp = contentful_build_category_tree(d['fields']['categories']['fr'])
         linked_entries += linked_entries_temp
+        #while int(len(category_bef)) - int(len(d['fields']['categories']['fr'])) > 4:
+        #    print(f"{colours.bcolors.WARNING}The entry {d['sys']['id']} returned empty category list {d['fields']['categories']['fr']} while category list {category_bef}")
+        #    d['fields']['categories']['fr'], linked_entries_temp = contentful_build_category_tree(
+        #        category_bef)
+        #    linked_entries += linked_entries_temp
     # Resolve a specific case for the actionPlan profile when we want to resolve link 2 levels deep
     if d['sys']['type'] == 'Entry' and d['sys']['contentType']['sys']['id'] == 'actionPlan' and 'profiles' in d['fields']:
         cf_fields = recursive_keys + ['profile']
@@ -428,8 +451,8 @@ def compare_opn_contentful_document(cf_document, opn_document):
                     for language, slug in opn_document['fields']['slug'].items():
                         # Create the new URL
                         contenttype = contenttype_categories[language][opn_document['sys']['contentType']['sys']['id']]
-                        old_slug = f"{language}/{contenttype}/{slug}"
-                        new_slug = f"{language}/{contenttype}/{cf_document['fields']['slug'][language]}"
+                        old_slug = f"{language}/{contenttype}/{slug}/index.html"
+                        new_slug = f"{language}/{contenttype}/{cf_document['fields']['slug'][language]}/"
                         if old_slug != new_slug:
                             # Put the URL in S3
                             aws_dw.s3_put_website_redirect(old_slug, new_slug)
@@ -452,7 +475,7 @@ class ContentfulClient:
     Class for the contentful connect client
     """
     def __init__(self, cf_clientid, cf_delivery_token, cf_env, opn_client):
-        self.request_client = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=request_timeout))
+        self.request_client = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=request_timeout),connector=aiohttp.TCPConnector(limit_per_host=limit_per_host,limit=limit,force_close=True,enable_cleanup_closed=True))
         self.cf_env = cf_env
         self.param = f"access_token={cf_delivery_token}&include=0&locale=*"
         self.cf_current_id = ''
@@ -460,4 +483,3 @@ class ContentfulClient:
         self.linked_entries = []
         self.opn_cf_index = f"d4w-entries_{cf_env}"
         self.unavailable_cf_entry = []
-        self.rate_limit_file = open('rate_limit', 'a')
