@@ -3,6 +3,7 @@ import sys
 
 # Local import
 from . import contentful_dw
+from . import colours
 from dotenv import load_dotenv
 
 
@@ -75,6 +76,30 @@ async def iterate_and_convert_content(self, node, language):
     return html_converted
 
 
+def resolve_language(self, node, language):
+    """
+    Resolve the language if it doesn't exist default to french and add [FR]
+
+    :param self: the contentful/opensearch client class
+    :param node: the content of the node key
+    :param language: the language we are currently resolving
+    :return:
+    """
+
+    if 'title' in node:
+        if language in node['title']:
+            entry_title = resolved_entry['fields']['title'][language]
+        else:
+            entry_title = resolved_entry['fields']['title']['fr'] + ' [FR]'
+    elif 'internalName' in resolved_entry['fields']:
+        if language in node['internalName']:
+            entry_title = resolved_entry['fields']['internalName'][language]
+        else:
+            entry_title = resolved_entry['fields']['internalName']['fr'] + ' [FR]'
+    print(f"{colours.bcolors.FAIL}the entry {resolved_entry['sys']['id']} doesn't have a {language_resolved} translation")
+
+    
+
 async def convert_rich_text2html(self, node, language):
     """
     Converts rich text to html. Iterate over each node types and converts it to html
@@ -146,11 +171,17 @@ async def convert_rich_text2html(self, node, language):
         else:
             logo_asset = ''
         entry_type = node['data']['target']['sys']['linkType'].lower()
-        entry_title = resolved_entry['fields']['title'][language_resolved]
+        if language_resolved in resolved_entry['fields']['title']:
+            entry_title = resolved_entry['fields']['title'][language_resolved]
+        else:
+            entry_title = resolved_entry['fields']['title']['fr'] + ' [FR]'
         entry_contenttype = resolved_entry['sys']['contentType']['sys']['id']
         if resolved_entry['sys']['contentType']['sys']['id'] == 'externalLink':
             return f'<div class="d4wentry-id-{entry_id} d4entry-type-{entry_type} d4entry-embedded-content"><p class="d4entry-embedded-content-title">{entry_title}</p>{resolved_entry["fields"]["content"]["fr"]}</div>'
-        entry_slug = resolved_entry['fields']['slug'][language_resolved]
+        if language_resolved in resolved_entry['fields']['slug']:
+            entry_slug = resolved_entry['fields']['slug'][language_resolved]
+        else:
+            entry_slug = resolved_entry['fields']['slug']['fr'] + ' [FR]'
         return (f'<div class="d4wentry-id-{entry_id} d4entry-type-{entry_type} d4entry-entry-block">'
                     f'<a href="/{entry_contenttype}/{entry_slug}">'
                     f'{entry_title}'
@@ -162,12 +193,24 @@ async def convert_rich_text2html(self, node, language):
         if resolved_entry is None:
             return ''
         entry_type = resolved_entry['sys']['type'].lower()
-        if 'title' in resolved_entry['fields']:
+        if 'title' in resolved_entry['fields'] and language_resolved in resolved_entry['fields']['title']:
             entry_title = resolved_entry['fields']['title'][language_resolved]
-        else:
+        elif 'internalName' in resolved_entry['fields']:
             entry_title = resolved_entry['fields']['internalName']['fr']
+        else:
+            # If we cannot find the language resolved, default to french
+            if 'title' in resolved_entry['fields']:
+                entry_title = resolved_entry['fields']['title']['fr'] + ' [FR]'
+            elif 'internalName' in resolved_entry['fields']:
+                entry_title = resolved_entry['fields']['internalName']['fr'] + ' [FR]'
+            print(f"{colours.bcolors.FAIL}the entry {resolved_entry['sys']['id']} doesn't have a {language_resolved} translation")
+            language_resolved = 'fr'
         entry_contenttype = resolved_entry['sys']['contentType']['sys']['id']
-        entry_slug = resolved_entry['fields']['slug'][language_resolved]
+        # If slug is undefined, do not throw an error
+        if 'slug' in resolved_entry['fields'] and language_resolved in resolved_entry['fields']['slug']:
+            entry_slug = resolved_entry['fields']['slug'][language_resolved]
+        else:
+            entry_slug = ''
         return (
             f'<a class="d4wentry-id-{entry_id} d4entry-type-{entry_type} d4entry-entry-inline d4entry-entry-inline-title" href="/{entry_contenttype}/{entry_slug}">'
             f'{entry_title}'
@@ -188,8 +231,11 @@ async def convert_rich_text2html(self, node, language):
             entry_slug = 'none'
         if 'title' in resolved_entry['fields'] and language_resolved in resolved_entry['fields']['title']:
             entry_title = resolved_entry['fields']['title'][language_resolved]
-        else:
+        elif 'internalName' in resolved_entry['fields']:
             entry_title = resolved_entry['fields']['internalName']['fr']
+        else:
+            # Defaults to french if the entry doesn't have any translations
+            entry_title = resolved_entry['fields']['title']['fr']
         converted_value = f"<a class='d4wentry-id-{entry_id} d4entry-type-{entry_type} d4entry-entry-hyperlink d4entry-entry-inline-title' href='/{entry_contenttype}/{entry_slug}'>{await iterate_and_convert_content(self,node['content'], language)}</a>"
         return converted_value
     elif nodetype == 'text':
