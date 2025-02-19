@@ -16,7 +16,8 @@ load_dotenv()
 # Global variable definition
 opn_host = os.environ['OPN_HOST']
 opn_ca = 'ca'
-opn_port = os.environ['OPN_PORT']
+opn_port = 443
+# opn_port = os.environ['OPN_PORT']
 opn_cf_index = os.environ['OPN_CF_INDEX']
 s3_bucket = os.environ['S3_BUCKET']
 site_url = os.environ['SITE_URL']
@@ -228,7 +229,7 @@ def main():
 
 def query_opn_inital_sitemap(cf_type, size):
     opn_query = {"query": { "bool":{"must": [{"term": {"sys.contentType.sys.id": cf_type}},
-                    {"term": {"fields.clientSites.fr.name.fr": "Digital Wallonia"}}]}},
+                    {"term": {"fields.clientSitesList.fr": "Digital Wallonia"}}]}},
                  "fields": ["fields.slug.*", "sys.contentType.sys.id", "sys.updatedAt", "sys.createdAt", "sort"],
                  "_source": False, "sort": [{"fields.publishedDate.fr": "asc"}, {"_id": "desc"}], "size": size}
     opn_entries = opn_client.search(
@@ -243,7 +244,7 @@ def query_opn_inital_sitemap(cf_type, size):
 
 def query_opn(cf_type, size, search_after=0):
     opn_query = {"query": { "bool":{"must": [{"term": {"sys.contentType.sys.id": cf_type}},
-                    {"term": {"fields.clientSites.fr.name.fr": "Digital Wallonia"}}]}},
+                    {"term": {"fields.clientSitesList.fr": "Digital Wallonia"}}]}},
                  "fields": ["fields.slug.*", "sys.contentType.sys.id", "sys.updatedAt", "sys.createdAt", "sort"],
                  "_source": False, "sort": [{"fields.publishedDate.fr": "asc"}, {"_id": "desc"}],
                  "search_after": search_after, "size": size}
