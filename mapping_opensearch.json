@@ -116,15 +116,38 @@
                 },
                 "id": {
                   "type": "keyword"
+                },
+                "parents": {
+                  "properties": {
+                    "title": {
+                      "localization": "text"
+                    },
+                    "slug": {
+                      "localization": "keyword"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "children": {
+                  "properties": {
+                    "fr": {
+                      "properties": {
+                        "title": {
+                          "localization": "text"
+                        },
+                        "slug": {
+                          "localization": "keyword"
+                        },
+                        "id": {
+                          "type": "keyword"
+                        }
+                      }
+                    }
+                  }
                 }
               }
-            }
-          }
-        },
-        "children": {
-          "properties": {
-            "fr": {
-              "type": "object"
             }
           }
         },

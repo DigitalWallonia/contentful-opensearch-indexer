@@ -51,5 +51,7 @@ cf_param = {
     'foreignEnterprise': {
     },
     'servicesPlace': {
+    },
+    'ecoMaterial': {
     }
 }
